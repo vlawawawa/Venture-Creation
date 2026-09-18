@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>KitchenSEAL · HPP & Waste</title>
+    <meta name="theme-color" content="#108bc2" />
+    <meta
+      name="description"
+      content="Prototype untuk menghitung biaya per porsi, harga jual berdasarkan margin, serta mencatat penjualan dan bahan terbuang."
+    />
+    <link rel="icon" type="image/gif" href="sealy.gif" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Brand and prototype version -->
+    <header>
+      <a class="brand" href="#"
+        ><span class="brand-orb" aria-hidden="true"><img src="sealy.gif" alt="" width="44" height="44" /></span
+        ><span class="brand-word">Kitchen<strong>SEAL</strong></span></a
+      ><span class="badge">PROTOTYPE</span>
+    </header>
+    <main>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">RUANG KERJA USAHA KULINER</p>
+          <h1>Harga jual punya dasar.</h1>
+          <p>Mulai dari satu resep, lalu kenali biaya yang terbuang.</p>
+        </div>
+        <div class="session">
+          Mode uji coba <strong>Data hanya selama halaman terbuka.</strong
+          ><span>Ekspor catatan sebelum menutup atau memuat ulang.</span>
+        </div>
+      </div>
+      <!-- Navigation: data-tab values match the panel IDs -->
+      <nav aria-label="Bagian prototype">
+        <button class="tab active" data-tab="recipe" aria-current="page">
+          <b class="step">01</b> <span>Resep & HPP</span></button
+        ><button class="tab" data-tab="daily">
+          <b class="step">02</b> <span>Catatan harian</span></button
+        ><button class="tab" data-tab="report">
+          <b class="step">03</b> <span>Ringkasan 7 hari</span>
+        </button>
+      </nav>
+      <!-- Recipe inputs and calculated cost per portion -->
+      <section id="recipe" class="panel">
+        <div class="workspace">
+          <div class="card">
+            <div class="cardhead">
+              <div>
+                <p class="eyebrow">LANGKAH PERTAMA</p>
+                <h2>Hitung resep kamu</h2>
+              </div>
+              <span class="chip">Angka awal: simulasi</span>
+            </div>
+            <div class="fields">
+              <label
+                >Nama menu<input
+                  id="menu"
+                  value="Ayam geprek"
+                  maxlength="80" /></label
+              ><label
+                >Porsi per resep<input
+                  id="servings"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="10"
+              /></label>
+            </div>
+            <p class="help">
+              Isi total bahan untuk satu resep. Kuantitas beli dan pemakaian
+              harus memakai satuan yang sama. Gunakan berat bahan yang bisa
+              dipakai.
+            </p>
+            <div class="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Bahan</th>
+                    <th>Satuan</th>
+                    <th>Kuantitas beli</th>
+                    <th>Harga beli (Rp)</th>
+                    <th>Pakai / resep</th>
+                    <th>Biaya</th>
+                    <th><span class="sr">Hapus</span></th>
+                  </tr>
+                </thead>
+                <tbody id="ingredients"></tbody>
+              </table>
+            </div>
+            <button id="addIngredient" class="secondary">+ Tambah bahan</button>
+            <div class="fields extras">
+              <label
+                >Biaya produksi lain / resep (Rp)<input
+                  id="extra"
+                  type="number"
+                  min="0"
+                  value="5000"
+                /><small
+                  >Contoh: gas dan tenaga kerja yang dialokasikan.</small
+                ></label
+              ><label
+                >Target margin HPP (%)<input
+                  id="margin"
+                  type="number"
+                  min="0"
+                  max="99"
+                  value="50"
+                /><small
+                  >Persentase dari harga jual, bukan markup.</small
+                ></label
+              >
+            </div>
+            <p id="calcError" class="error" role="alert"></p>
+          </div>
+          <aside>
+            <div class="result">
+              <p class="eyebrow">BIAYA SATU PORSI</p>
+              <div id="hpp" class="big">—</div>
+              <div class="divider"></div>
+              <div class="resultline">
+                <span>Total biaya resep</span><strong id="batchCost">—</strong>
+              </div>
+              <div class="resultline">
+                <span>Target margin</span><strong id="marginLabel">—</strong>
+              </div>
+              <div class="recommend">
+                <span>Harga jual untuk target margin</span
+                ><strong id="recommended">—</strong
+                ><small>Dibulatkan ke atas per Rp500.</small>
+              </div>
+              <p>HPP ÷ (1 − target margin)</p>
+            </div>
+            <div class="card pricecheck">
+              <h3>Cek harga jualmu</h3>
+              <label
+                >Harga jual per porsi (Rp)<input
+                  id="selling"
+                  type="number"
+                  min="1"
+                  value="20000"
+              /></label>
+              <div class="resultline">
+                <span>Selisih harga − HPP</span
+                ><strong id="contribution">—</strong>
+              </div>
+              <div class="resultline">
+                <span>Margin terhadap HPP</span
+                ><strong id="actualMargin">—</strong>
+              </div>
+              <p class="help">
+                Belum laba bersih. Sewa, biaya platform, pajak, dan biaya lain
+                yang belum dimasukkan perlu diperhitungkan.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </section>
+      <!-- Daily sales and waste forms with session history -->
+      <section id="daily" class="panel" hidden>
+        <div class="sectionhead">
+          <div>
+            <p class="eyebrow">KEBIASAAN KECIL, DATA BERGUNA</p>
+            <h2>Catat aktivitas harian</h2>
+          </div>
+        </div>
+        <div class="twocol">
+          <form id="saleForm" class="card">
+            <h3>Penjualan menu</h3>
+            <p class="help">
+              Menggunakan nama menu, HPP, dan harga jual dari kalkulator saat
+              dicatat.
+            </p>
+            <label>Tanggal<input id="saleDate" type="date" required /></label
+            ><label
+              >Porsi terjual<input
+                id="saleQty"
+                type="number"
+                min="1"
+                step="1"
+                required
+                value="20" /></label
+            ><button class="primary">Catat penjualan</button>
+          </form>
+          <form id="wasteForm" class="card">
+            <h3>Bahan terbuang</h3>
+            <label>Tanggal<input id="wasteDate" type="date" required /></label>
+            <div class="fields">
+              <label
+                >Nama bahan<input
+                  id="wasteName"
+                  required
+                  maxlength="80"
+                  placeholder="Contoh: cabai" /></label
+              ><label
+                >Satuan<select id="wasteUnit">
+                  <option>g</option>
+                  <option>ml</option>
+                  <option>pcs</option>
+                </select></label
+              >
+            </div>
+            <div class="fields">
+              <label
+                >Jumlah terbuang<input
+                  id="wasteQty"
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  required /></label
+              ><label
+                >Biaya per satuan (Rp)<input
+                  id="wasteCost"
+                  type="number"
+                  min="0"
+                  step="any"
+                  required
+                  placeholder="Contoh: 30 per g"
+              /></label>
+            </div>
+            <label
+              >Alasan<select id="wasteReason">
+                <option>Basi / rusak</option>
+                <option>Produksi berlebih</option>
+                <option>Sisa persiapan</option>
+                <option>Lainnya</option>
+              </select></label
+            ><button class="primary">Catat waste</button>
+          </form>
+        </div>
+        <p id="notice" role="status"></p>
+        <div class="card">
+          <h3>Catatan sesi ini</h3>
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Jenis</th>
+                  <th>Menu / bahan</th>
+                  <th>Jumlah</th>
+                  <th>Nilai</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="log"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <!-- Seven-day summary and export of all session records -->
+      <section id="report" class="panel" hidden>
+        <div class="sectionhead">
+          <div>
+            <p class="eyebrow">TINJAU LALU PUTUSKAN</p>
+            <h2>Ringkasan tujuh hari</h2>
+          </div>
+          <label
+            >Tanggal akhir periode<input id="reportDate" type="date"
+          /></label>
+        </div>
+        <p id="period" class="help"></p>
+        <div class="metrics">
+          <div class="card">
+            <span>Omzet tercatat</span><strong id="revenue">—</strong>
+          </div>
+          <div class="card">
+            <span>Porsi terjual</span><strong id="portions">—</strong>
+          </div>
+          <div class="card">
+            <span>Nilai bahan terbuang</span><strong id="wasteTotal">—</strong>
+          </div>
+        </div>
+        <div class="twocol">
+          <div class="card">
+            <h3>Waste terbesar menurut nilai</h3>
+            <div id="ranking"></div>
+            <p class="help">
+              Total menurut nama bahan. Nilai memakai biaya saat catatan dibuat.
+            </p>
+          </div>
+          <div class="card insight">
+            <p class="eyebrow">BAHAN EVALUASI</p>
+            <h3 id="insightTitle">Mulai dari catatan pertama.</h3>
+            <p id="insightText">
+              Catat bahan terbuang untuk melihat prioritas evaluasi pembelian.
+            </p>
+            <p class="help">
+              Ini ringkasan catatan, bukan prediksi. Pola hari tertentu perlu
+              dibandingkan selama beberapa minggu.
+            </p>
+          </div>
+        </div>
+        <div class="card export">
+          <div>
+            <h3>Bawa hasil uji cobamu</h3>
+            <p class="help">
+              Unduh seluruh catatan sesi ini sebagai CSV. File dapat dibuka di
+              Excel atau Google Sheets.
+            </p>
+          </div>
+          <button class="secondary" id="export">Ekspor catatan CSV</button>
+        </div>
+      </section>
+      <footer>
+        <span>KitchenSEAL · Prototype tahap 3</span
+        ><span>Mulai sederhana. Validasi bersama pemilik usaha.</span>
+      </footer>
+    </main>
+    <!-- Load after the DOM so app.js can bind elements immediately -->
+    <script src="app.js"></script>
+  </body>
+</html>
