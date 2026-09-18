@@ -442,8 +442,7 @@ button:active {
   left: 0;
   right: 0;
   height: 85px;
-  background: linear-gradient(#ffffff20, #ffffff02);
-  border-bottom: 1px solid #ffffff0d;
+  background: linear-gradient(#ffffff20, #ffffff00);
 }
 .result > * {
   position: relative;
